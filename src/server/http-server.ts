@@ -2,7 +2,8 @@ import startServer from "./server.js";
 
 // Environment variables with default values
 const PORT = parseInt(process.env.PORT || "3001", 10);
-const HOST = process.env.HOST || "0.0.0.0";
+const HOST = process.env.RAILWAY_PUBLIC_DOMAIN || "0.0.0.0";
+const HTTP_TYPE = process.env.RAILWAY_PUBLIC_DOMAIN ? "https" : "http";
 
 async function main() {
   try {
@@ -14,11 +15,12 @@ async function main() {
       transportType: "httpStream",
       httpStream: {
         port: PORT,
+        host: HOST,
       },
     });
     
-    console.error(`MCP Server running at http://${HOST}:${PORT}`);
-    console.error(`SSE endpoint: http://${HOST}:${PORT}/sse`);
+    console.error(`MCP Server running at ${HTTP_TYPE}://${HOST}:${PORT}`);
+    console.error(`SSE endpoint: ${HTTP_TYPE}://${HOST}:${PORT}`);
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
