@@ -196,6 +196,55 @@ export class VectorStoreService {
   }
 
   /**
+   * Fetch document content in manageable chunks
+   */
+  static async fetchPaginated(
+    documentId: string,
+    options?: {
+      cursor?: number;
+      maxTokens?: number;
+    },
+  ): Promise<
+    FetchResult & {
+      chunk: string;
+      cursor: number;
+      nextCursor: number | null;
+      hasMore: boolean;
+      approxTokens: number;
+      totalLength: number;
+    }
+  > {
+    const cursor = Number(options?.cursor ?? 0);
+    const maxTokens = Number(options?.maxTokens ?? 20_000);
+    const safeCursor = Number.isFinite(cursor) && cursor >= 0 ? cursor : 0;
+    const safeMaxTokens = Number.isFinite(maxTokens) && maxTokens > 0 ? maxTokens : 20_000;
+
+    const approxCharsPerToken = 4;
+    const maxChunkChars = safeMaxTokens * approxCharsPerToken;
+
+    const fullDocument = await this.fetch(documentId);
+    const totalLength = fullDocument.text.length;
+
+    const start = Math.min(safeCursor, totalLength);
+    const end = Math.min(start + maxChunkChars, totalLength);
+    const chunk = fullDocument.text.slice(start, end);
+
+    const nextCursor = end < totalLength ? end : null;
+    const hasMore = nextCursor !== null;
+    const approxTokens = Math.ceil(chunk.length / approxCharsPerToken);
+
+    return {
+      ...fullDocument,
+      chunk,
+      cursor: start,
+      nextCursor,
+      hasMore,
+      approxTokens,
+      totalLength,
+    };
+  }
+
+  /**
    * Convert a stream to string
    */
   private static async streamToString(stream: Response): Promise<string> {

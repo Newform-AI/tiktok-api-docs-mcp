@@ -57,6 +57,43 @@ export function registerTools<T extends Record<string, unknown> | undefined>(ser
     }
   });
 
+  // Paginated fetch tool - allows clients to retrieve large documents in chunks
+  server.addTool({
+    name: "fetch_paginated",
+    description: "Fetch a TikTok API documentation document by ID with pagination support for large files",
+    parameters: z.object({
+      id: z.string().describe("Unique identifier for the document"),
+      cursor: z.union([z.number(), z.string()]).optional().describe("Character offset to start reading from (defaults to 0)"),
+      max_tokens: z.union([z.number(), z.string()]).optional().describe("Approximate maximum number of tokens per chunk (defaults to 20000)")
+    }),
+    execute: async (params) => {
+      try {
+        const rawCursor = params.cursor !== undefined ? Number(params.cursor) : undefined;
+        const cursor = rawCursor !== undefined && Number.isFinite(rawCursor) ? rawCursor : undefined;
+        const rawMaxTokens = params.max_tokens !== undefined ? Number(params.max_tokens) : undefined;
+        const maxTokens = rawMaxTokens !== undefined && Number.isFinite(rawMaxTokens) ? rawMaxTokens : undefined;
+
+        const paginated = await services.VectorStoreService.fetchPaginated(params.id, {
+          cursor,
+          maxTokens,
+        });
+
+        return JSON.stringify(paginated);
+      } catch (error) {
+        console.error("Paginated fetch error:", error);
+        return JSON.stringify({
+          error: error instanceof Error ? error.message : "Paginated fetch failed",
+          id: params.id,
+          cursor: params.cursor ?? 0,
+          max_tokens: params.max_tokens ?? 20000,
+          chunk: "",
+          hasMore: false,
+          nextCursor: null,
+        });
+      }
+    }
+  });
+
   // Status tool - helpful for debugging
   server.addTool({
     name: "vector_store_status",
@@ -82,28 +119,4 @@ export function registerTools<T extends Record<string, unknown> | undefined>(ser
     }
   });
 
-  // Legacy greeting tools (can be removed if not needed)
-  server.addTool({
-    name: "hello_world",
-    description: "A simple hello world tool",
-    parameters: z.object({
-      name: z.string().describe("Name to greet")
-    }),
-    execute: async (params) => {
-      const greeting = services.GreetingService.generateGreeting(params.name);
-      return greeting;
-    }
-  });
-
-  server.addTool({
-    name: "goodbye",
-    description: "A simple goodbye tool",
-    parameters: z.object({
-      name: z.string().describe("Name to bid farewell to")
-    }),
-    execute: async (params) => {
-      const farewell = services.GreetingService.generateFarewell(params.name);
-      return farewell;
-    }
-  });
 }
