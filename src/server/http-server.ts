@@ -11,10 +11,9 @@ async function main() {
     
     // Start the server with SSE transport
     server.start({
-      transportType: "sse",
-      sse: {
+      transportType: "httpStream",
+      httpStream: {
         port: PORT,
-        endpoint: "/sse",
       },
     });
     
