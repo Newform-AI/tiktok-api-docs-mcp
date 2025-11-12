@@ -1,11 +1,11 @@
-import { FastMCP } from "fastmcp";
-import * as services from "./services/index.js";
+import type { FastMCP } from "fastmcp";
+//
 
 /**
  * Register all resources with the MCP server
  * @param server The FastMCP server instance
  */
-export function registerResources(server: FastMCP) {
+export function registerResources<T extends Record<string, unknown> | undefined>(server: FastMCP<T>) {
   // Example resource
   server.addResourceTemplate({
     uriTemplate: "example://{id}",

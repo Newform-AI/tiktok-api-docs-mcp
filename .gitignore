@@ -83,3 +83,6 @@ tmp/
 .env.test.local
 .env.production.local
 .env.local
+
+# Facebook API documentation
+facebook-api-*

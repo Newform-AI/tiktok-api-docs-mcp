@@ -1,4 +1,4 @@
-import { FastMCP } from "fastmcp";
+import type { FastMCP } from "fastmcp";
 import { z } from "zod";
 import * as services from "./services/index.js";
 
@@ -7,7 +7,7 @@ import * as services from "./services/index.js";
  * 
  * @param server The FastMCP server instance
  */
-export function registerTools(server: FastMCP) {
+export function registerTools<T extends Record<string, unknown> | undefined>(server: FastMCP<T>) {
   // Search tool - required for ChatGPT connectors and deep research
   server.addTool({
     name: "search",

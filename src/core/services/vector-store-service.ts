@@ -1,3 +1,7 @@
+/** biome-ignore-all lint/complexity/noThisInStatic: <explanation> */
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+/** biome-ignore-all lint/suspicious/noExplicitAny: <explanation> */
+
 import OpenAI from "openai";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
@@ -141,7 +145,8 @@ export class VectorStoreService {
 
     try {
       // First check cache from recent search
-      if (this.fileCache.has(documentId)) {
+      // temp disabled cache
+      /* if (this.fileCache.has(documentId)) {
         const cachedResult = this.fileCache.get(documentId);
         
         // Extract full text content
@@ -160,24 +165,28 @@ export class VectorStoreService {
             attributes: cachedResult.attributes,
           },
         };
-      }
+      } */
 
       // If not in cache, try to retrieve the file directly
-      const file = await this.openai!.files.retrieve(documentId);
+      const file = await this.openai!.vectorStores.files.retrieve(documentId, {
+        vector_store_id: this.vectorStoreId!,
+      });
+
+      const originalFile = await this.openai!.files.retrieve(documentId);
       
       // Download file content
-      const fileContent = await this.openai!.files.content(documentId);
-      const text = await this.streamToString(fileContent);
+      const fileContent = await this.openai!.vectorStores.files.content(documentId, {
+        vector_store_id: this.vectorStoreId!,
+      });
+      const text = fileContent.data.map((c: any) => c.text).join('\n');
       
       return {
         id: documentId,
-        title: file.filename || `Document ${documentId}`,
+        title: originalFile.filename || `Document ${documentId}`,
         text: text,
-        url: `https://platform.tiktok.com/docs/${file.filename?.replace('.md', '') || documentId}`,
+        url: `https://platform.tiktok.com/docs/${originalFile.filename?.replace('.md', '') || documentId}`,
         metadata: {
           created_at: file.created_at,
-          bytes: file.bytes,
-          purpose: file.purpose,
         },
       };
     } catch (error) {

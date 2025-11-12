@@ -15,7 +15,6 @@ async function main() {
       sse: {
         port: PORT,
         endpoint: "/sse",
-        host: HOST,
       },
     });
     
