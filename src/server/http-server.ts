@@ -15,7 +15,7 @@ async function main() {
       transportType: "httpStream",
       httpStream: {
         port: PORT,
-        host: HOST,
+        host: "0.0.0.0",
       },
     });
     
