@@ -235,6 +235,7 @@ export class VectorStoreService {
 
     return {
       ...fullDocument,
+      text: "[SEE CHUNK]",
       chunk,
       cursor: start,
       nextCursor,
