@@ -11,7 +11,8 @@
     "build:http": "bun build src/server/http-server.ts --outdir build --target node",
     "dev": "bun --watch src/index.ts",
     "start:http": "bun run src/server/http-server.ts",
-    "dev:http": "bun --watch src/server/http-server.ts"
+    "dev:http": "bun --watch src/server/http-server.ts",
+    "sync:incremental": "bun run src/scripts/syncIncremental.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
